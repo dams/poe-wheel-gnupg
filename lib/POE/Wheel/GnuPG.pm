@@ -37,6 +37,55 @@ as you would use GnuPG::Interface, except for the POE signals of course.
 
 =head1 SYNOPSIS
 
+  # Example 0 :
+  # Quickly encrypt some text
+
+  use POE qw(Wheel::GnuPG);
+
+  POE::Session->create(
+    inline_states => {
+      _start => sub {
+
+        my $gnupg = POE::Wheel::GnuPG->new(
+          ready_to_input_data => 'ready_to_input_data',
+          something_on_stdout => 'something_on_stdout',
+          end_of_process => 'the_end',
+        );
+        $_[HEAP]{gnupg} = $gnupg;
+
+        $gnupg->options->hash_init( armor   => 1,
+                                    homedir => '/home/dams/.gnupg' );
+		$gnupg->options->push_recipients( 'foo@bar.org' );
+        $gnupg->options->meta_interactive( 0 );
+
+        $gnupg->encrypt();
+      },
+
+      ready_to_input_data => sub {
+        my $input_fh = $_[ARG0];
+        print $input_fh "This is the secret data!";
+
+        $_[HEAP]{gnupg}->finished_writing_input();
+      },
+
+      something_on_stdout => sub {
+		  my $stdout_fh = $_[ARG0];
+          return if eof $stdout_fh;
+          my @output = <$stdout_fh>;
+          print "Received crypted data : @output\n";
+      },
+      the_end => sub {
+          # clean up
+          $_[HEAP]{gnupg}->destroy();
+          exit();
+      },
+    }
+  );
+
+  POE::Kernel->run();
+  exit;
+
+
   # Example 1 :
   # decrypt a file bits by bits asynchronously
   # without storing decrypted data on the filesystem.
