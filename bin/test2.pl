@@ -7,8 +7,7 @@ POE::Session->create(
 
         # let's say I have a file I want to crypt
         use IO::File;
-#        $_[HEAP]{encrypted_fh} = IO::File->new('encrypted_file.asc', 'r');
-        $_[HEAP]{unencrypted_fh} = IO::File->new('/Users/dams/scratchpad/plop3', 'r');
+        $_[HEAP]{encrypted_fh} = IO::File->new('encrypted_file.asc', 'r');
 
 
         my $gnupg = POE::Wheel::GnuPG->new(
@@ -53,8 +52,7 @@ POE::Session->create(
 		  my $stdout_fh = $_[ARG0];
           return if eof $stdout_fh;
           my @output = <$stdout_fh>;
-#          my @uppercased_output = map { uc } @output;
-          print "got output, uppercased : @output\n";
+          print "got encypted output : @output\n";
       },
       something_on_logger => sub {
 		  my $logger_fh = $_[ARG0];
